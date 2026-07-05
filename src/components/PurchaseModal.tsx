@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { Voucher } from '../lib/vouchers';
 import type { SphereIdentity } from '../lib/connect';
-import { sendPayment, resolveCoinId } from '../lib/connect';
+import { getBalance, sendPayment, resolveCoinId } from '../lib/connect';
 import { uctToBaseUnits } from '../lib/currency';
 import { recordPurchase, type Order } from '../lib/orders';
 
@@ -32,10 +32,16 @@ export function PurchaseModal({ voucher, identity, onConnect, onClose, onPurchas
         throw new Error('No wallet connected.');
       }
 
+      const assets = await getBalance();
+      const uctAsset = assets.find((asset) => asset.symbol.toUpperCase() === 'UCT');
+      if (!uctAsset) {
+        throw new Error('UCT was not found in your wallet balance.');
+      }
+
       const coinId = await resolveCoinId('UCT');
       const result = await sendPayment({
         recipient: MERCHANT_NAMETAG,
-        amount: uctToBaseUnits(voucher.priceUct),
+        amount: uctToBaseUnits(voucher.priceUct, uctAsset.decimals),
         coinId,
         message: `UniVoucher — ${voucher.game} (${voucher.denomination})`,
       });

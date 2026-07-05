@@ -30,7 +30,9 @@ export default function App() {
     try {
       const assets = await getBalance();
       const uct = assets.find((a) => a.symbol.toUpperCase() === 'UCT');
-      if (uct) setBalanceUct(baseUnitsToUct(uct.totalAmount));
+      if (uct) {
+        setBalanceUct(baseUnitsToUct(uct.totalAmount, uct.decimals));
+      }
     } catch {
       // Balance is a nice-to-have; a failed query shouldn't block the page.
     }
