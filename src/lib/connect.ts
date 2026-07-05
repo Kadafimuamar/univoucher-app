@@ -161,6 +161,57 @@ export interface SendPaymentResult {
   error?: string;
 }
 
+function extractTransferId(value: unknown): string | undefined {
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    if (typeof record.transferId === 'string') {
+      return record.transferId;
+    }
+    if (typeof record.id === 'string') {
+      return record.id;
+    }
+    if (record.transfer && typeof record.transfer === 'object') {
+      const transfer = record.transfer as Record<string, unknown>;
+      if (typeof transfer.id === 'string') {
+        return transfer.id;
+      }
+    }
+    if (record.result && typeof record.result === 'object') {
+      return extractTransferId(record.result);
+    }
+  }
+
+  return undefined;
+}
+
+function normalizeSendPaymentResult(raw: unknown): SendPaymentResult {
+  if (raw === null || raw === undefined) {
+    return { success: false, error: 'The wallet did not return a transfer result.' };
+  }
+
+  if (typeof raw === 'string') {
+    return { success: true, transferId: raw };
+  }
+
+  if (typeof raw === 'boolean') {
+    return { success: raw };
+  }
+
+  if (typeof raw === 'object') {
+    const record = raw as Record<string, unknown>;
+    const transferId = extractTransferId(raw);
+    const success = record.success === false ? false : Boolean(transferId || record.status || record.id || record.transfer || record.result || record.data);
+    const error = typeof record.error === 'string' ? record.error : typeof record.message === 'string' ? record.message : undefined;
+    return { success, transferId, error };
+  }
+
+  return { success: false, error: 'The wallet returned an unexpected transfer result.' };
+}
+
 /**
  * Sends a payment intent. The wallet shows its own approval UI to the
  * visitor before anything moves — UniVoucher just gets the result.
@@ -176,10 +227,11 @@ export interface SendPaymentResult {
  * the documented shape.
  */
 export async function sendPayment(input: SendPaymentInput): Promise<SendPaymentResult> {
-  return requireClient().intent('send', {
+  const raw = await requireClient().intent('send', {
     to: input.recipient,
     amount: input.amount,
     coinId: input.coinId,
     ...(input.message ? { message: input.message } : {}),
   });
+  return normalizeSendPaymentResult(raw);
 }
