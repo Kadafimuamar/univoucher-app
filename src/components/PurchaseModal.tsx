@@ -48,14 +48,15 @@ export function PurchaseModal({ voucher, identity, onConnect, onClose, onPurchas
         message: `UniVoucher — ${voucher.game} (${voucher.denomination})`,
       });
 
-      if (!result.success || !result.transferId) {
+      if (!result.success) {
         throw new Error(result.error ?? `The wallet declined the transfer to ${recipient}.`);
       }
 
       // In production: hand `result.transferId` to your backend and let it
       // confirm the transfer before releasing a real code. Here we simulate
       // instant fulfillment — see orders.ts for the production note.
-      const placedOrder = recordPurchase(activeIdentity.directAddress, voucher, result.transferId);
+      const transferId = result.transferId ?? `wallet-${Date.now()}`;
+      const placedOrder = recordPurchase(activeIdentity.directAddress, voucher, transferId);
       setOrder(placedOrder);
       setStage('done');
       onPurchased(placedOrder);

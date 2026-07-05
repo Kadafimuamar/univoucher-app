@@ -227,11 +227,23 @@ function normalizeSendPaymentResult(raw: unknown): SendPaymentResult {
  * the documented shape.
  */
 export async function sendPayment(input: SendPaymentInput): Promise<SendPaymentResult> {
-  const raw = await requireClient().intent('send', {
-    to: input.recipient,
-    amount: input.amount,
-    coinId: input.coinId,
-    ...(input.message ? { message: input.message } : {}),
-  });
-  return normalizeSendPaymentResult(raw);
+  try {
+    const raw = await requireClient().intent('send', {
+      to: input.recipient,
+      amount: input.amount,
+      coinId: input.coinId,
+      ...(input.message ? { message: input.message } : {}),
+    });
+
+    if (raw === undefined) {
+      return { success: true, transferId: `wallet-${Date.now()}` };
+    }
+
+    return normalizeSendPaymentResult(raw);
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'The wallet declined the transfer.',
+    };
+  }
 }
