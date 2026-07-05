@@ -48,7 +48,8 @@ export function PurchaseModal({ voucher, identity, onConnect, onClose, onPurchas
         message: `UniVoucher — ${voucher.game} (${voucher.denomination})`,
       });
 
-      if (!result.success) {
+      const hasTransferEvidence = Boolean(result.transferId) || result.success || result.status === 'completed' || result.status === 'submitted' || result.status === 'confirmed' || result.status === 'delivered' || result.status === 'pending' || result.deliveryPending;
+      if (!hasTransferEvidence) {
         throw new Error(result.error ?? `The wallet declined the transfer to ${recipient}.`);
       }
 

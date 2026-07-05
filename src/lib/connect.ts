@@ -146,7 +146,11 @@ export async function resolveRecipient(recipient: string): Promise<string> {
   }
 
   if (trimmed.startsWith('DIRECT://')) {
-    return trimmed;
+    const direct = trimmed.slice('DIRECT://'.length).trim();
+    if (!direct) {
+      throw new Error('The configured merchant address is empty.');
+    }
+    return direct;
   }
 
   const looksLikeAddress = trimmed.startsWith('0x') || /^[0-9a-fA-F]{8,}$/.test(trimmed);
@@ -183,6 +187,8 @@ export interface SendPaymentInput {
 export interface SendPaymentResult {
   success: boolean;
   transferId?: string;
+  status?: string;
+  deliveryPending?: boolean;
   error?: string;
 }
 
@@ -229,9 +235,25 @@ function normalizeSendPaymentResult(raw: unknown): SendPaymentResult {
   if (typeof raw === 'object') {
     const record = raw as Record<string, unknown>;
     const transferId = extractTransferId(raw);
-    const success = record.success === false ? false : Boolean(transferId || record.status || record.id || record.transfer || record.result || record.data);
+    const status = typeof record.status === 'string' ? record.status.toLowerCase() : undefined;
+    const deliveryPending = record.deliveryPending === true || record.deliveryPending === 'true';
+    const success = record.success === false
+      ? false
+      : Boolean(
+          transferId ||
+          status === 'completed' ||
+          status === 'submitted' ||
+          status === 'confirmed' ||
+          status === 'delivered' ||
+          status === 'pending' ||
+          deliveryPending ||
+          record.id ||
+          record.transfer ||
+          record.result ||
+          record.data,
+        );
     const error = typeof record.error === 'string' ? record.error : typeof record.message === 'string' ? record.message : undefined;
-    return { success, transferId, error };
+    return { success, transferId, status, deliveryPending, error };
   }
 
   return { success: false, error: 'The wallet returned an unexpected transfer result.' };
