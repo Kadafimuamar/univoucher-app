@@ -145,7 +145,32 @@ export async function resolveRecipient(recipient: string): Promise<string> {
     throw new Error('No recipient configured.');
   }
 
-  return trimmed;
+  if (trimmed.startsWith('DIRECT://')) {
+    return trimmed;
+  }
+
+  const looksLikeAddress = trimmed.startsWith('0x') || /^[0-9a-fA-F]{8,}$/.test(trimmed);
+  if (looksLikeAddress) {
+    return trimmed;
+  }
+
+  const identifier = trimmed.startsWith('@') ? trimmed : `@${trimmed}`;
+  try {
+    const resolved = await requireClient().query('sphere_resolve', { identifier });
+    if (resolved && typeof resolved === 'object') {
+      const record = resolved as Record<string, unknown>;
+      if (typeof record.directAddress === 'string' && record.directAddress) {
+        return record.directAddress;
+      }
+      if (typeof record.address === 'string' && record.address) {
+        return record.address;
+      }
+    }
+  } catch {
+    // Fall back to the original value so the wallet can still try to resolve it.
+  }
+
+  return identifier;
 }
 
 export interface SendPaymentInput {
@@ -230,9 +255,10 @@ export async function sendPayment(input: SendPaymentInput): Promise<SendPaymentR
   try {
     const raw = await requireClient().intent('send', {
       to: input.recipient,
+      recipient: input.recipient,
       amount: input.amount,
       coinId: input.coinId,
-      ...(input.message ? { message: input.message } : {}),
+      ...(input.message ? { memo: input.message, message: input.message } : {}),
     });
 
     if (raw === undefined) {
