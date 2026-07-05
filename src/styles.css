@@ -1,0 +1,482 @@
+:root {
+  --bg: #0e0b1a;
+  --surface: #171226;
+  --surface-raised: #1e1832;
+  --stroke: #2c2545;
+  --accent: #7c5cff;
+  --accent-soft: rgba(124, 92, 255, 0.16);
+  --mint: #29f19c;
+  --text: #f4f2fa;
+  --text-muted: #8d86a8;
+  --font-display: 'Chakra Petch', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  background-image:
+    radial-gradient(circle at 15% 0%, rgba(124, 92, 255, 0.16), transparent 40%),
+    radial-gradient(circle at 85% 20%, rgba(41, 241, 156, 0.08), transparent 45%);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+}
+
+::selection {
+  background: var(--accent);
+  color: #0e0b1a;
+}
+
+.container {
+  width: min(1080px, 100%);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ---------- Header ---------- */
+
+.site-header {
+  border-bottom: 1px solid var(--stroke);
+  padding: 20px 0;
+}
+
+.site-header .row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 0.02em;
+}
+
+.brand .dot {
+  color: var(--mint);
+}
+
+.brand .tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  border: 1px solid var(--stroke);
+  border-radius: 999px;
+  padding: 3px 8px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ---------- Wallet / connect ---------- */
+
+.wallet-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wallet-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--stroke);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.wallet-pill .dot-live {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--mint);
+  box-shadow: 0 0 0 3px rgba(41, 241, 156, 0.18);
+}
+
+.wallet-balance {
+  color: var(--mint);
+  font-weight: 500;
+}
+
+.btn {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  padding: 10px 18px;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  font-size: 14px;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #0e0b1a;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.btn-primary:disabled {
+  background: var(--stroke);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--stroke);
+  color: var(--text);
+}
+
+.btn-ghost:hover {
+  border-color: var(--accent);
+}
+
+/* ---------- Hero ---------- */
+
+.hero {
+  padding: 64px 0 40px;
+  border-bottom: 1px dashed var(--stroke);
+}
+
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(34px, 5vw, 52px);
+  line-height: 1.05;
+  margin: 0 0 16px;
+  max-width: 14ch;
+}
+
+.hero h1 span {
+  color: var(--mint);
+}
+
+.hero p {
+  color: var(--text-muted);
+  font-size: 17px;
+  max-width: 52ch;
+  line-height: 1.6;
+}
+
+/* ---------- Voucher grid ---------- */
+
+.grid-section {
+  padding: 40px 0 80px;
+}
+
+.grid-section h2 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  letter-spacing: 0.02em;
+  margin-bottom: 20px;
+}
+
+.voucher-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+/* Ticket-stub card: a notch cut on each side, a dashed tear-line
+   separating the "stub" (game info) from the "value" strip. */
+.voucher-card {
+  --stub-accent: #7c5cff;
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--stroke);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.voucher-card::before,
+.voucher-card::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: var(--bg);
+  border-radius: 999px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+}
+
+.voucher-card::before {
+  left: -10px;
+}
+
+.voucher-card::after {
+  right: -10px;
+}
+
+.voucher-card .stub-top {
+  padding: 20px 22px 16px;
+  border-top: 3px solid var(--stub-accent);
+}
+
+.voucher-card .game-name {
+  font-family: var(--font-display);
+  font-size: 18px;
+  margin: 0 0 4px;
+}
+
+.voucher-card .publisher {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin: 0 0 12px;
+}
+
+.voucher-card .blurb {
+  color: var(--text-muted);
+  font-size: 13.5px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.tear-line {
+  border-top: 1px dashed var(--stroke);
+  position: relative;
+}
+
+.voucher-card .stub-bottom {
+  padding: 16px 22px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.denomination {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.price {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--mint);
+  font-size: 15px;
+}
+
+/* ---------- Purchase modal ---------- */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 5, 12, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 10;
+}
+
+.modal-ticket {
+  width: min(420px, 100%);
+  background: var(--surface-raised);
+  border: 1px solid var(--stroke);
+  border-radius: 18px;
+  overflow: hidden;
+  animation: rise 0.18s ease-out;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-head {
+  padding: 22px 24px 18px;
+  border-bottom: 1px dashed var(--stroke);
+}
+
+.modal-head .eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+
+.modal-head h3 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  margin: 0 0 4px;
+}
+
+.modal-body {
+  padding: 20px 24px;
+}
+
+.line-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  padding: 8px 0;
+  color: var(--text-muted);
+}
+
+.line-item strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.line-item.total {
+  border-top: 1px solid var(--stroke);
+  margin-top: 6px;
+  padding-top: 14px;
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 16px;
+}
+
+.line-item.total strong {
+  color: var(--mint);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  padding: 4px 24px 24px;
+}
+
+.modal-actions .btn {
+  flex: 1;
+}
+
+.status-note {
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 0 24px 18px;
+  line-height: 1.5;
+}
+
+.status-note.error {
+  color: #ff8095;
+}
+
+/* ---------- Code reveal ---------- */
+
+.code-reveal {
+  margin: 0 24px 24px;
+  padding: 16px 18px;
+  border: 1px dashed var(--mint);
+  border-radius: 12px;
+  background: rgba(41, 241, 156, 0.07);
+}
+
+.code-reveal .label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--mint);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+
+.code-reveal .code {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  letter-spacing: 0.05em;
+  word-break: break-all;
+}
+
+/* ---------- Orders drawer ---------- */
+
+.orders-section {
+  border-top: 1px solid var(--stroke);
+  padding: 40px 0 80px;
+}
+
+.order-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--stroke);
+  font-size: 14px;
+}
+
+.order-row .game-col strong {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+.order-row .game-col span {
+  display: block;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  margin-top: 2px;
+}
+
+.order-row .code-col {
+  font-family: var(--font-mono);
+  color: var(--mint);
+  font-size: 13px;
+}
+
+.empty-state {
+  color: var(--text-muted);
+  font-size: 14px;
+  padding: 20px 0;
+}
+
+.site-footer {
+  margin-top: auto;
+  border-top: 1px solid var(--stroke);
+  padding: 24px 0;
+  color: var(--text-muted);
+  font-size: 12.5px;
+}
