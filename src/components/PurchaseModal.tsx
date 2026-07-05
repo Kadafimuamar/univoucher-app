@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { Voucher } from '../lib/vouchers';
 import type { SphereIdentity } from '../lib/connect';
-import { getBalance, resolveCoinId, resolveRecipient, sendPayment } from '../lib/connect';
+import { getBalance, isTransferAccepted, resolveCoinId, resolveRecipient, sendPayment } from '../lib/connect';
 import { uctToBaseUnits } from '../lib/currency';
 import { recordPurchase, type Order } from '../lib/orders';
 
@@ -54,8 +54,7 @@ export function PurchaseModal({ voucher, identity, onConnect, onClose, onPurchas
         message: `UniVoucher — ${voucher.game} (${voucher.denomination})`,
       });
 
-      const hasTransferEvidence = Boolean(result.transferId) || result.success || result.status === 'completed' || result.status === 'submitted' || result.status === 'confirmed' || result.status === 'delivered' || result.status === 'pending' || result.deliveryPending;
-      if (!hasTransferEvidence) {
+      if (!isTransferAccepted(result)) {
         throw new Error(result.error ?? `The wallet declined the transfer to ${recipient}.`);
       }
 

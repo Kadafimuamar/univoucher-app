@@ -172,6 +172,15 @@ export interface SendPaymentResult {
   error?: string;
 }
 
+export function isTransferAccepted(result: SendPaymentResult): boolean {
+  if (result.success === false) {
+    return false;
+  }
+
+  const status = result.status?.toLowerCase();
+  return Boolean(result.transferId) || result.deliveryPending === true || status === 'completed' || status === 'confirmed' || status === 'delivered' || status === 'submitted' || status === 'pending';
+}
+
 function extractTransferId(value: unknown): string | undefined {
   if (typeof value === 'string') {
     return value;
