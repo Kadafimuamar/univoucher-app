@@ -141,7 +141,7 @@ export async function resolveCoinId(symbolOrHex: string): Promise<string> {
 
 /** Resolves a nametag (e.g. '@univoucher') to its underlying address. */
 export async function resolveNametag(nametag: string): Promise<string> {
-  return requireClient().query('sphere_resolve', { nametag });
+  return requireClient().query('sphere_resolve', { identifier: nametag });
 }
 
 export async function resolveRecipient(recipient: string): Promise<string> {
