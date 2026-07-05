@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import type { Voucher } from '../lib/vouchers';
 import type { SphereIdentity } from '../lib/connect';
-import { getBalance, sendPayment, resolveCoinId } from '../lib/connect';
+import { getBalance, resolveCoinId, resolveRecipient, sendPayment } from '../lib/connect';
 import { uctToBaseUnits } from '../lib/currency';
 import { recordPurchase, type Order } from '../lib/orders';
 
 const MERCHANT_NAMETAG = `@${import.meta.env.VITE_MERCHANT_NAMETAG ?? 'univoucher'}`;
+const MERCHANT_RECIPIENT = import.meta.env.VITE_MERCHANT_ADDRESS ?? MERCHANT_NAMETAG;
 
 type Stage = 'confirm' | 'paying' | 'done' | 'error';
 
@@ -38,16 +39,17 @@ export function PurchaseModal({ voucher, identity, onConnect, onClose, onPurchas
         throw new Error('UCT was not found in your wallet balance.');
       }
 
+      const recipient = await resolveRecipient(MERCHANT_RECIPIENT);
       const coinId = await resolveCoinId('UCT');
       const result = await sendPayment({
-        recipient: MERCHANT_NAMETAG,
+        recipient,
         amount: uctToBaseUnits(voucher.priceUct, uctAsset.decimals),
         coinId,
         message: `UniVoucher — ${voucher.game} (${voucher.denomination})`,
       });
 
       if (!result.success || !result.transferId) {
-        throw new Error(result.error ?? 'The wallet declined or the transfer failed.');
+        throw new Error(result.error ?? `The wallet declined the transfer to ${recipient}.`);
       }
 
       // In production: hand `result.transferId` to your backend and let it
@@ -75,7 +77,7 @@ export function PurchaseModal({ voucher, identity, onConnect, onClose, onPurchas
         <div className="modal-body">
           <div className="line-item">
             <span>Paid to</span>
-            <strong>{MERCHANT_NAMETAG}</strong>
+            <strong>{MERCHANT_RECIPIENT}</strong>
           </div>
           <div className="line-item">
             <span>Coin</span>

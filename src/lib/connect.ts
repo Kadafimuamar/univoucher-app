@@ -144,6 +144,25 @@ export async function resolveNametag(nametag: string): Promise<string> {
   return requireClient().query('sphere_resolve', { nametag });
 }
 
+export async function resolveRecipient(recipient: string): Promise<string> {
+  const trimmed = recipient.trim();
+  if (!trimmed) {
+    throw new Error('No recipient configured.');
+  }
+
+  if (trimmed.startsWith('DIRECT://')) {
+    return trimmed;
+  }
+
+  const looksLikeAddress = trimmed.startsWith('0x') || /^[0-9a-fA-F]{8,}$/.test(trimmed);
+  if (looksLikeAddress) {
+    return trimmed;
+  }
+
+  const nametag = trimmed.startsWith('@') ? trimmed.slice(1) : trimmed;
+  return resolveNametag(nametag);
+}
+
 export interface SendPaymentInput {
   recipient: string; // '@nametag' or a DIRECT:// address
   amount: string; // smallest-unit integer as a string, e.g. "5000000"
