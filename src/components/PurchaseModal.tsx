@@ -5,8 +5,14 @@ import { getBalance, resolveCoinId, resolveRecipient, sendPayment } from '../lib
 import { uctToBaseUnits } from '../lib/currency';
 import { recordPurchase, type Order } from '../lib/orders';
 
-const MERCHANT_NAMETAG = `@${import.meta.env.VITE_MERCHANT_NAMETAG ?? 'univoucher'}`;
-const MERCHANT_RECIPIENT = import.meta.env.VITE_MERCHANT_ADDRESS ?? MERCHANT_NAMETAG;
+const MERCHANT_NAMETAG = (() => {
+  const configured = import.meta.env.VITE_MERCHANT_NAMETAG?.trim();
+  if (!configured) {
+    return '@univoucher';
+  }
+  return configured.startsWith('@') ? configured : `@${configured}`;
+})();
+const MERCHANT_RECIPIENT = MERCHANT_NAMETAG;
 
 type Stage = 'confirm' | 'paying' | 'done' | 'error';
 

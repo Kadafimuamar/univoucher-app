@@ -146,35 +146,15 @@ export async function resolveRecipient(recipient: string): Promise<string> {
   }
 
   if (trimmed.startsWith('DIRECT://')) {
-    const direct = trimmed.slice('DIRECT://'.length).trim();
-    if (!direct) {
-      throw new Error('The configured merchant address is empty.');
-    }
-    return direct;
+    throw new Error('Direct addresses are not supported for v2 transfers. Please configure a published Unicity identity such as @your-nametag.');
   }
 
   const looksLikeAddress = trimmed.startsWith('0x') || /^[0-9a-fA-F]{8,}$/.test(trimmed);
   if (looksLikeAddress) {
-    return trimmed;
+    throw new Error('This recipient looks like a raw address. v2 transfers require a published Unicity identity such as @your-nametag.');
   }
 
-  const identifier = trimmed.startsWith('@') ? trimmed : `@${trimmed}`;
-  try {
-    const resolved = await requireClient().query('sphere_resolve', { identifier });
-    if (resolved && typeof resolved === 'object') {
-      const record = resolved as Record<string, unknown>;
-      if (typeof record.directAddress === 'string' && record.directAddress) {
-        return record.directAddress;
-      }
-      if (typeof record.address === 'string' && record.address) {
-        return record.address;
-      }
-    }
-  } catch {
-    // Fall back to the original value so the wallet can still try to resolve it.
-  }
-
-  return identifier;
+  return trimmed.startsWith('@') ? trimmed : `@${trimmed}`;
 }
 
 export interface SendPaymentInput {
