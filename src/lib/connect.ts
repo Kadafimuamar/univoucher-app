@@ -33,8 +33,9 @@ export interface SphereIdentity {
 }
 
 export interface AssetBalance {
-  coinId: string;
-  symbol: string;
+  coinId: string; // hex — the wallet's real identifier for this coin
+  symbol: string; // e.g. 'UCT' — human-readable ticker
+  decimals: number;
   totalAmount: string;
   fiatValueUsd?: number | null;
 }
@@ -110,6 +111,34 @@ export async function getBalance(): Promise<AssetBalance[]> {
   return requireClient().query('sphere_getBalance');
 }
 
+const HEX_ID_PATTERN = /^[0-9a-f]+$/;
+const coinIdCache = new Map<string, string>();
+
+/**
+ * Payment intents need the coin's real (hex) id — the wallet's validator
+ * rejects a ticker like "UCT" with "coinId must be lowercase even-length
+ * hex". This resolves a human-readable symbol to that hex id by matching it
+ * against the connected wallet's own balance. Pass an already-hex id through
+ * unchanged.
+ */
+export async function resolveCoinId(symbolOrHex: string): Promise<string> {
+  const normalized = symbolOrHex.toLowerCase();
+  if (HEX_ID_PATTERN.test(normalized) && normalized.length % 2 === 0 && normalized.length > 8) {
+    return normalized;
+  }
+
+  const cached = coinIdCache.get(normalized);
+  if (cached) return cached;
+
+  const assets = await getBalance();
+  const match = assets.find((a) => a.symbol.toLowerCase() === normalized);
+  if (!match) {
+    throw new Error(`Couldn't find a coin matching "${symbolOrHex}" in this wallet's balance.`);
+  }
+  coinIdCache.set(normalized, match.coinId);
+  return match.coinId;
+}
+
 /** Resolves a nametag (e.g. '@univoucher') to its underlying address. */
 export async function resolveNametag(nametag: string): Promise<string> {
   return requireClient().query('sphere_resolve', { nametag });
@@ -118,7 +147,7 @@ export async function resolveNametag(nametag: string): Promise<string> {
 export interface SendPaymentInput {
   recipient: string; // '@nametag' or a DIRECT:// address
   amount: string; // smallest-unit integer as a string, e.g. "5000000"
-  coinId: string; // e.g. 'UCT'
+  coinId: string; // hex coin id — resolve tickers like 'UCT' with resolveCoinId() first
   message?: string;
 }
 

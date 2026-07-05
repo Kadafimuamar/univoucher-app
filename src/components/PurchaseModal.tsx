@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { Voucher } from '../lib/vouchers';
 import type { SphereIdentity } from '../lib/connect';
-import { sendPayment } from '../lib/connect';
+import { sendPayment, resolveCoinId } from '../lib/connect';
 import { uctToBaseUnits } from '../lib/currency';
 import { recordPurchase, type Order } from '../lib/orders';
 
@@ -32,10 +32,11 @@ export function PurchaseModal({ voucher, identity, onConnect, onClose, onPurchas
         throw new Error('No wallet connected.');
       }
 
+      const coinId = await resolveCoinId('UCT');
       const result = await sendPayment({
         recipient: MERCHANT_NAMETAG,
         amount: uctToBaseUnits(voucher.priceUct),
-        coinId: 'UCT',
+        coinId,
         message: `UniVoucher — ${voucher.game} (${voucher.denomination})`,
       });
 
